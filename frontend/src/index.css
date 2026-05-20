@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #FDFAF5;
+  }
+  body {
+    @apply text-shaanti-900 font-body;
+    background-color: #FDFAF5;
+  }
+  h1, h2, h3, h4, h5 {
+    @apply font-sans;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-shaanti-700 hover:bg-shaanti-800 text-shaanti-50 font-body font-medium px-6 py-2.5 rounded-full transition-all duration-200 tracking-wide text-sm;
+  }
+  .btn-secondary {
+    @apply bg-transparent hover:bg-shaanti-100 text-shaanti-700 font-body font-medium px-6 py-2.5 rounded-full border border-shaanti-300 transition-all duration-200 tracking-wide text-sm;
+  }
+  .card {
+    @apply bg-white rounded-2xl border border-shaanti-200 overflow-hidden transition-all duration-200;
+  }
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-shaanti-200 bg-white focus:outline-none focus:ring-2 focus:ring-shaanti-400 focus:border-transparent transition font-body text-shaanti-900 placeholder:text-shaanti-400;
+  }
+  .section-title {
+    @apply font-sans text-3xl font-light text-shaanti-800 tracking-wide;
+  }
+  .tag {
+    @apply inline-block px-3 py-1 rounded-full text-xs font-body font-medium tracking-wide;
+  }
+}

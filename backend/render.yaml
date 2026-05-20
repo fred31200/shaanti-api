@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: shaanti-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_PATH
+        value: /opt/render/project/src/zenbook.db
