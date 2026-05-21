@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../database');
 const { SECRET } = require('../middleware/auth');
+const { sendWelcome } = require('../services/email');
 
 router.post('/register', (req, res) => {
   const { name, email, password, role = 'client', phone } = req.body;
@@ -15,6 +16,8 @@ router.post('/register', (req, res) => {
   const result = db.prepare('INSERT INTO users (name, email, password, role, phone) VALUES (?, ?, ?, ?, ?)').run(name, email, hash, role, phone || null);
 
   const token = jwt.sign({ id: result.lastInsertRowid, email, role }, SECRET, { expiresIn: '7d' });
+  // Email de bienvenue (asynchrone, ne bloque pas la réponse)
+  sendWelcome({ name, email }).catch(e => console.error('Welcome email:', e.message));
   res.json({ token, user: { id: result.lastInsertRowid, name, email, role } });
 });
 

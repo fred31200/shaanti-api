@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const db = require('../database');
 const { authMiddleware } = require('../middleware/auth');
+const { sendRoomConfirmation } = require('../services/email');
+const { notifyRoomConfirmation } = require('../services/sms');
 
 router.get('/availability', (req, res) => {
   const dates = db.prepare(`
@@ -37,6 +39,11 @@ router.post('/book', authMiddleware, (req, res) => {
       FROM room_bookings rb JOIN room_slots rs ON rs.id = rb.slot_id
       WHERE rb.id = ?
     `).get(result.lastInsertRowid);
+    // Notifications
+    const user = db.prepare('SELECT name, email, phone FROM users WHERE id = ?').get(req.user.id);
+    sendRoomConfirmation(user, { ...full, purpose }).catch(e => console.error('Email salle:', e.message));
+    notifyRoomConfirmation(user?.phone, { ...full, purpose }).catch(e => console.error('SMS salle:', e.message));
+
     res.status(201).json(full);
   } catch (e) {
     db.exec('ROLLBACK');

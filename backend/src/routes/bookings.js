@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const db = require('../database');
 const { authMiddleware } = require('../middleware/auth');
+const { sendBookingConfirmation, sendCancellation } = require('../services/email');
+const { notifyBookingConfirmation } = require('../services/sms');
 
 router.post('/', authMiddleware, (req, res) => {
   const { professional_id, service_id, slot_id, notes } = req.body;
@@ -37,6 +39,13 @@ router.post('/', authMiddleware, (req, res) => {
     JOIN slots sl ON sl.id = b.slot_id
     WHERE b.id = ?
   `).get(insertedId);
+
+  // Notifications (asynchrones — ne bloquent pas la réponse)
+  if (full) {
+    const user = db.prepare('SELECT name, email, phone FROM users WHERE id = ?').get(req.user.id);
+    sendBookingConfirmation(user, full).catch(e => console.error('Email confirmation:', e.message));
+    notifyBookingConfirmation(user?.phone, full).catch(e => console.error('SMS confirmation:', e.message));
+  }
 
   res.status(201).json(full);
 });
@@ -77,6 +86,12 @@ router.delete('/:id', authMiddleware, (req, res) => {
     db.exec('ROLLBACK');
     return res.status(500).json({ error: 'Erreur lors de l\'annulation' });
   }
+
+  // Email annulation
+  const user = db.prepare('SELECT name, email, phone FROM users WHERE id = ?').get(req.user.id);
+  const slotInfo = db.prepare('SELECT * FROM slots WHERE id = ?').get(booking.slot_id);
+  const svcInfo  = db.prepare('SELECT name FROM services WHERE id = ?').get(booking.service_id);
+  sendCancellation(user, { ...slotInfo, service_name: svcInfo?.name }).catch(e => console.error('Email annulation:', e.message));
 
   res.json({ success: true });
 });

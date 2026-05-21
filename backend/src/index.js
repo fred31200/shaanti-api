@@ -7,6 +7,7 @@ const profRoutes = require('./routes/professionals');
 const bookingRoutes = require('./routes/bookings');
 const userRoutes = require('./routes/users');
 const roomRoutes = require('./routes/room');
+const reminders = require('./jobs/reminders');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,4 +39,5 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`🌿 Shaanti API démarrée sur http://localhost:${PORT}`);
+  reminders.start();
 });

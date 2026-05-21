@@ -63,6 +63,7 @@ db.exec(`
     slot_id INTEGER NOT NULL,
     status TEXT DEFAULT 'confirmed',
     notes TEXT,
+    reminder_sent INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (client_id) REFERENCES users(id),
     FOREIGN KEY (professional_id) REFERENCES professionals(id),
