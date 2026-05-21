@@ -209,7 +209,7 @@ function seedDatabase() {
   insertService.run(pPriscilla.lastInsertRowid, 'Danses Brésiliennes', 'Samba, Forró et rythmes brésiliens — débutants bienvenus', 60, 10);
   insertService.run(pPriscilla.lastInsertRowid, 'Cours particulier Danse', 'Accompagnement individuel adapté à votre niveau et vos objectifs', 60, 55);
 
-  // Satya F — Danse féminine & expression
+  // Satya F — Danse orientale & expression féminine
   const uSatya = insertUser.run(
     'Satya F.',
     'satya@shaanti-centre.fr',
@@ -222,11 +222,11 @@ function seedDatabase() {
     uSatya.lastInsertRowid,
     `Passant de nombreuses années à se produire pour divers événements, Satya a souhaité renouer avec l'essentiel : danser avec l'émotion du moment, en saisissant la magie de l'instant présent.\n\nLoin de la technique et de la performance, elle se laisse porter par la musique, son corps et son cœur. Les cours qu'elle propose se veulent en résonnance avec la féminité de chacune et chacun, cette part douce qui sommeille en nous.\n\nCe cours est un espace où l'on s'autorise à décompresser et se libérer, se reconnecter à soi et à son corps. Une invitation à s'aimer tel.le que l'on est et à accueillir ses émotions en toute bienveillance.`,
     ADDR, CITY, ZIP, 'danse',
-    'Danse Féminine,Expression Corporelle,Danse Intuitive',
+    'Danse Orientale,Danse Féminine,Expression Corporelle,Danse Intuitive',
     4.8, 22
   );
-  insertService.run(pSatya.lastInsertRowid, 'Danse Féminine & Expression', 'Reconnexion au corps, à l\'émotion et à la féminité par le mouvement', 60, 10);
-  insertService.run(pSatya.lastInsertRowid, 'Atelier Danse Intuitive', 'Espace de liberté et d\'expression sans jugement ni performance', 90, 15);
+  insertService.run(pSatya.lastInsertRowid, 'Danse Orientale', 'Reconnexion au corps, à l\'émotion et à la féminité par la danse orientale', 60, 10);
+  insertService.run(pSatya.lastInsertRowid, 'Danse Féminine & Expression', 'Espace de liberté et d\'expression sans jugement ni performance', 60, 10);
   insertService.run(pSatya.lastInsertRowid, 'Cours particulier Danse', 'Accompagnement individuel sensible et bienveillant', 60, 55);
 
   // ══════════════════════════════════════════════════════════════
@@ -293,34 +293,37 @@ function seedDatabase() {
   insertService.run(pClaire.lastInsertRowid, 'Cours particulier Pilates', 'Séance individuelle sur mesure', 60, 65);
 
   // ══════════════════════════════════════════════════════════════
-  // CRÉNEAUX (30 jours)
+  // CRÉNEAUX — Planning réel importé depuis Liberfit
   // ══════════════════════════════════════════════════════════════
-  const proList = [
-    { id: pSabrina.lastInsertRowid, days: [1,3,6], times: ['09:30','18:00','19:15'] },  // Lun, Mer, Sam
-    { id: pElodie.lastInsertRowid,  days: [2,4,6], times: ['09:00','18:30','10:30'] },  // Mar, Jeu, Sam
-    { id: pLaurence.lastInsertRowid,days: [1,4],   times: ['10:30','17:00']         },  // Lun, Jeu
-    { id: pPriscilla.lastInsertRowid,days:[2,5,6], times: ['19:00','10:00','11:30'] },  // Mar, Ven, Sam
-    { id: pSatya.lastInsertRowid,   days: [3,6],   times: ['19:15','10:00']         },  // Mer, Sam
-    { id: pJessica.lastInsertRowid, days: [1,3,5], times: ['09:00','10:00','18:30'] },  // Lun, Mer, Ven
-    { id: pLaure.lastInsertRowid,   days: [2,4,6], times: ['09:30','10:45','19:00'] },  // Mar, Jeu, Sam
-    { id: pClaire.lastInsertRowid,  days: [1,5],   times: ['11:00','18:30']         },  // Lun, Ven
+  // DOW : 0=Dim, 1=Lun, 2=Mar, 3=Mer, 4=Jeu, 5=Ven, 6=Sam
+  const schedule = [
+    // Lundi
+    { id: pJessica.lastInsertRowid,   dow: 1, start: '18:15', end: '19:15' },  // Postural Ball Pilates
+    { id: pJessica.lastInsertRowid,   dow: 1, start: '19:30', end: '20:30' },  // Pilates
+    // Mardi
+    { id: pElodie.lastInsertRowid,    dow: 2, start: '19:30', end: '20:30' },  // Yin Yang Yoga
+    { id: pElodie.lastInsertRowid,    dow: 2, start: '20:45', end: '21:45' },  // Bachata Lady Style
+    // Mercredi
+    { id: pLaure.lastInsertRowid,     dow: 3, start: '12:30', end: '13:30' },  // Pilates
+    { id: pSabrina.lastInsertRowid,   dow: 3, start: '19:15', end: '20:15' },  // Yin Yoga Sonore
+    { id: pSatya.lastInsertRowid,     dow: 3, start: '20:45', end: '21:45' },  // Danse Orientale
+    // Jeudi
+    { id: pLaurence.lastInsertRowid,  dow: 4, start: '18:15', end: '19:15' },  // Pilates
+    { id: pPriscilla.lastInsertRowid, dow: 4, start: '19:30', end: '20:30' },  // Salsa Lady Style
+    // Vendredi
+    { id: pLaure.lastInsertRowid,     dow: 5, start: '12:30', end: '13:30' },  // Pilates
   ];
 
   for (let day = 0; day < 60; day++) {
     const d = new Date();
     d.setDate(d.getDate() + day + 1);
-    if (d.getDay() === 0) continue; // pas le dimanche
+    const dow = d.getDay();
+    if (dow === 0) continue; // pas le dimanche
     const dateStr = d.toISOString().split('T')[0];
-    const dow = d.getDay(); // 1=Lun ... 6=Sam
 
-    for (const pro of proList) {
-      if (!pro.days.includes(dow)) continue;
-      for (const t of pro.times) {
-        const [h, m] = t.split(':').map(Number);
-        const totalMin = h * 60 + m + 55;
-        const end = `${String(Math.floor(totalMin / 60)).padStart(2, '0')}:${String(totalMin % 60).padStart(2, '0')}`;
-        insertSlot.run(pro.id, dateStr, t, end);
-      }
+    for (const s of schedule) {
+      if (s.dow !== dow) continue;
+      insertSlot.run(s.id, dateStr, s.start, s.end);
     }
   }
 
