@@ -12,14 +12,21 @@ router.post('/', authMiddleware, (req, res) => {
   const existing = db.prepare('SELECT id FROM bookings WHERE client_id = ? AND slot_id = ?').get(req.user.id, slot_id);
   if (existing) return res.status(409).json({ error: 'Vous avez déjà réservé ce créneau' });
 
-  const booking = db.transaction(() => {
+  let insertedId;
+  try {
+    db.exec('BEGIN');
     const result = db.prepare(`
       INSERT INTO bookings (client_id, professional_id, service_id, slot_id, notes)
       VALUES (?, ?, ?, ?, ?)
     `).run(req.user.id, professional_id, service_id, slot_id, notes || null);
     db.prepare('UPDATE slots SET is_booked = 1 WHERE id = ?').run(slot_id);
-    return result;
-  })();
+    db.exec('COMMIT');
+    insertedId = result.lastInsertRowid;
+  } catch (err) {
+    db.exec('ROLLBACK');
+    console.error('Booking transaction error:', err);
+    return res.status(500).json({ error: 'Erreur lors de la réservation' });
+  }
 
   const full = db.prepare(`
     SELECT b.*, u.name as pro_name, s.name as service_name, s.duration, s.price,
@@ -29,7 +36,7 @@ router.post('/', authMiddleware, (req, res) => {
     JOIN services s ON s.id = b.service_id
     JOIN slots sl ON sl.id = b.slot_id
     WHERE b.id = ?
-  `).get(booking.lastInsertRowid);
+  `).get(insertedId);
 
   res.status(201).json(full);
 });
@@ -61,10 +68,15 @@ router.delete('/:id', authMiddleware, (req, res) => {
     return res.status(400).json({ error: 'Annulation impossible moins de 2h avant le rendez-vous' });
   }
 
-  db.transaction(() => {
+  try {
+    db.exec('BEGIN');
     db.prepare('UPDATE bookings SET status = ? WHERE id = ?').run('cancelled', req.params.id);
     db.prepare('UPDATE slots SET is_booked = 0 WHERE id = ?').run(booking.slot_id);
-  })();
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    return res.status(500).json({ error: 'Erreur lors de l\'annulation' });
+  }
 
   res.json({ success: true });
 });
@@ -79,7 +91,8 @@ router.post('/:id/review', authMiddleware, (req, res) => {
   const already = db.prepare('SELECT id FROM reviews WHERE booking_id = ?').get(req.params.id);
   if (already) return res.status(409).json({ error: 'Avis déjà soumis' });
 
-  db.transaction(() => {
+  try {
+    db.exec('BEGIN');
     db.prepare('INSERT INTO reviews (client_id, professional_id, booking_id, rating, comment) VALUES (?, ?, ?, ?, ?)').run(
       req.user.id, booking.professional_id, booking.id, rating, comment || null
     );
@@ -87,7 +100,11 @@ router.post('/:id/review', authMiddleware, (req, res) => {
     db.prepare('UPDATE professionals SET rating = ?, review_count = ? WHERE id = ?').run(
       Math.round(avg.avg * 10) / 10, avg.cnt, booking.professional_id
     );
-  })();
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    return res.status(500).json({ error: 'Erreur lors de l\'envoi de l\'avis' });
+  }
 
   res.json({ success: true });
 });
