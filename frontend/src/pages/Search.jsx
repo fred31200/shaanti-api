@@ -3,19 +3,20 @@ import { useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon } from 'lucide-react';
 import api from '../api';
 import CourseCard from '../components/ProCard';
+import Mandala from '../components/Mandala';
 
 const CATEGORIES = [
-  { id: '', label: 'Tous les cours' },
-  { id: 'yoga', label: 'Yoga', emoji: '🧘' },
-  { id: 'danse', label: 'Danse', emoji: '💃' },
-  { id: 'pilates', label: 'Pilates', emoji: '🤸' },
+  { id: '',        label: 'Tous les cours', emoji: '' },
+  { id: 'yoga',    label: 'Yoga',           emoji: '🧘' },
+  { id: 'danse',   label: 'Danse',          emoji: '💃' },
+  { id: 'pilates', label: 'Pilates',        emoji: '🤸' },
 ];
 
 export default function Search() {
   const [params, setParams] = useSearchParams();
-  const [pros, setPros] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState(params.get('q') || '');
+  const [pros,     setPros]     = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [q,        setQ]        = useState(params.get('q') || '');
   const [category, setCategory] = useState(params.get('category') || '');
 
   const fetchPros = useCallback(async (cat, query) => {
@@ -23,7 +24,7 @@ export default function Search() {
     try {
       const p = {};
       if (query) p.q = query;
-      if (cat) p.category = cat;
+      if (cat)   p.category = cat;
       const { data } = await api.get('/professionals', { params: p });
       setPros(data);
     } finally {
@@ -44,9 +45,21 @@ export default function Search() {
 
   return (
     <div style={{ backgroundColor: '#FDFAF5' }} className="min-h-screen">
-      {/* Header */}
-      <div style={{ backgroundColor: '#F7F0E6', borderBottom: '1px solid #EDE0CC' }} className="py-12">
-        <div className="max-w-5xl mx-auto px-6">
+
+      {/* Header avec mandala */}
+      <div
+        style={{ backgroundColor: '#F7F0E6', borderBottom: '1px solid #EDE0CC' }}
+        className="py-14 relative overflow-hidden"
+      >
+        {/* Mandalas décoratifs */}
+        <div className="absolute -top-16 -right-16 pointer-events-none select-none">
+          <Mandala size={260} color="#A67C52" opacity={0.08} spin />
+        </div>
+        <div className="absolute -bottom-12 left-8 pointer-events-none select-none">
+          <Mandala size={180} color="#A67C52" opacity={0.05} spin reverse />
+        </div>
+
+        <div className="max-w-5xl mx-auto px-6 relative">
           <p className="font-body text-xs uppercase tracking-[0.3em] text-shaanti-400 mb-2">Shaanti</p>
           <h1 className="section-title mb-6">Nos cours</h1>
           <form onSubmit={handleSearch} className="flex gap-2 max-w-md">
@@ -66,17 +79,17 @@ export default function Search() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-10">
-        {/* Filtres */}
+        {/* Filtres catégorie */}
         <div className="flex flex-wrap gap-2 mb-8">
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
               onClick={() => handleCategory(cat.id)}
               style={category === cat.id
-                ? { backgroundColor: '#8B6340', color: '#FDFAF5', borderColor: '#8B6340' }
+                ? { backgroundColor: '#6F4E32', color: '#FDFAF5', borderColor: '#6F4E32' }
                 : { backgroundColor: 'white', color: '#6F4E32', borderColor: '#EDE0CC' }
               }
-              className="px-5 py-2 rounded-full text-xs font-body font-medium border tracking-wide transition-all"
+              className="px-5 py-2 rounded-full text-xs font-body font-medium border tracking-wide transition-all hover:-translate-y-0.5"
             >
               {cat.emoji && <span className="mr-1.5">{cat.emoji}</span>}
               {cat.label}
@@ -88,11 +101,12 @@ export default function Search() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} style={{ backgroundColor: '#F7F0E6' }} className="rounded-2xl h-64 animate-pulse" />
+              <div key={i} style={{ backgroundColor: '#F7F0E6' }} className="rounded-2xl h-72 animate-pulse" />
             ))}
           </div>
         ) : pros.length === 0 ? (
           <div className="text-center py-20">
+            <Mandala size={80} color="#A67C52" opacity={0.2} className="mx-auto mb-6" />
             <p className="font-sans text-2xl font-light text-shaanti-400 mb-2">Aucun cours trouvé</p>
             <p className="font-body text-sm text-shaanti-400">Essayez une autre catégorie</p>
           </div>

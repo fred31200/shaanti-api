@@ -24,7 +24,27 @@ export default {
       },
       backgroundColor: {
         page: '#FDFAF5',
-      }
+      },
+      animation: {
+        'spin-slow':    'spin 50s linear infinite',
+        'spin-reverse': 'spin-reverse 70s linear infinite',
+        'fade-in-up':   'fadeInUp 0.6s ease-out both',
+        'float':        'float 6s ease-in-out infinite',
+      },
+      keyframes: {
+        'spin-reverse': {
+          from: { transform: 'rotate(360deg)' },
+          to:   { transform: 'rotate(0deg)' },
+        },
+        fadeInUp: {
+          '0%':   { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%':      { transform: 'translateY(-12px)' },
+        },
+      },
     }
   },
   plugins: []

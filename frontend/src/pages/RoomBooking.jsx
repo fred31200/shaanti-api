@@ -5,6 +5,7 @@ import { format, addDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import Mandala from '../components/Mandala';
 
 const FEATURES = [
   'Parquet bois & miroirs sur toute la largeur',
@@ -65,9 +66,18 @@ export default function RoomBooking() {
 
   return (
     <div style={{ backgroundColor: '#FDFAF5' }} className="min-h-screen">
-      {/* Header */}
-      <div style={{ backgroundColor: '#F7F0E6', borderBottom: '1px solid #EDE0CC' }} className="py-12">
-        <div className="max-w-5xl mx-auto px-6">
+      {/* Header avec mandala */}
+      <div
+        style={{ backgroundColor: '#F7F0E6', borderBottom: '1px solid #EDE0CC' }}
+        className="py-14 relative overflow-hidden"
+      >
+        <div className="absolute -top-12 -right-12 pointer-events-none select-none">
+          <Mandala size={240} color="#A67C52" opacity={0.08} spin />
+        </div>
+        <div className="absolute -bottom-10 left-4 pointer-events-none select-none">
+          <Mandala size={160} color="#A67C52" opacity={0.05} spin reverse />
+        </div>
+        <div className="max-w-5xl mx-auto px-6 relative">
           <p className="font-body text-xs uppercase tracking-[0.3em] text-shaanti-400 mb-2">Centre Shaanti</p>
           <h1 className="section-title mb-3">Louer la salle</h1>
           <p className="font-body text-sm text-shaanti-500 max-w-md leading-relaxed">
@@ -81,8 +91,22 @@ export default function RoomBooking() {
 
           {/* Infos salle */}
           <div className="md:col-span-2 space-y-6">
-            <div style={{ backgroundColor: '#F7F0E6' }} className="rounded-2xl h-48 flex items-center justify-center text-6xl">
-              🏛️
+            {/* Photo du centre */}
+            <div className="rounded-2xl overflow-hidden shadow-md relative" style={{ height: '200px' }}>
+              <img
+                src="https://shaanti.fr/wp-content/uploads/2025/07/Photo_Centre_3-1024x1024.png"
+                alt="Salle Shaanti"
+                className="w-full h-full object-cover"
+                onError={e => {
+                  e.target.style.display = 'none';
+                  e.target.parentNode.style.backgroundColor = '#F7F0E6';
+                  e.target.parentNode.style.display = 'flex';
+                  e.target.parentNode.style.alignItems = 'center';
+                  e.target.parentNode.style.justifyContent = 'center';
+                  e.target.parentNode.innerHTML = '<span style="font-size:3.5rem">🏛️</span>';
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-shaanti-800/20 to-transparent pointer-events-none" />
             </div>
 
             <div>

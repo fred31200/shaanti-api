@@ -5,9 +5,11 @@ import { format, addDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import Mandala from '../components/Mandala';
 
 const CAT_EMOJI = { yoga: '🧘', danse: '💃', pilates: '🤸' };
-const CAT_BG = { yoga: '#F7F0E6', danse: '#F2EBF7', pilates: '#EBF2F7' };
+const CAT_BG    = { yoga: '#F7F0E6', danse: '#F2EBF7', pilates: '#EBF2F7' };
+const CAT_COLOR = { yoga: '#A67C52', danse: '#7B52A6', pilates: '#3A6B8A' };
 
 export default function ProDetail() {
   const { id } = useParams();
@@ -81,21 +83,74 @@ export default function ProDetail() {
 
   return (
     <div style={{ backgroundColor: '#FDFAF5' }} className="min-h-screen">
-      {/* Header */}
-      <div style={{ backgroundColor: bgColor, borderBottom: '1px solid #EDE0CC' }} className="py-12">
-        <div className="max-w-5xl mx-auto px-6">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 font-body text-sm text-shaanti-500 hover:text-shaanti-700 mb-6 transition-colors">
+      {/* Header avec photo du coach */}
+      <div
+        style={{ backgroundColor: bgColor, borderBottom: '1px solid #EDE0CC' }}
+        className="relative overflow-hidden"
+      >
+        {/* Mandala déco */}
+        <div className="absolute -right-16 -top-16 pointer-events-none select-none">
+          <Mandala size={260} color={CAT_COLOR[pro.category] || '#A67C52'} opacity={0.08} spin />
+        </div>
+
+        <div className="max-w-5xl mx-auto px-6 py-10 relative">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 font-body text-sm text-shaanti-500 hover:text-shaanti-700 mb-8 transition-colors"
+          >
             <ArrowLeft className="w-4 h-4" /> Retour aux cours
           </button>
-          <div className="flex items-center gap-5">
-            <div className="text-5xl">{CAT_EMOJI[pro.category] || '✨'}</div>
+
+          <div className="flex items-center gap-6">
+            {/* Avatar / photo */}
+            <div
+              className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden flex-shrink-0 shadow-md"
+              style={{ border: `3px solid ${CAT_COLOR[pro.category] || '#A67C52'}40` }}
+            >
+              {pro.avatar ? (
+                <img
+                  src={pro.avatar}
+                  alt={pro.name}
+                  className="w-full h-full object-cover"
+                  onError={e => {
+                    e.target.style.display = 'none';
+                    e.target.parentNode.style.display = 'flex';
+                    e.target.parentNode.style.alignItems = 'center';
+                    e.target.parentNode.style.justifyContent = 'center';
+                    e.target.parentNode.style.fontSize = '2.5rem';
+                    e.target.parentNode.style.backgroundColor = bgColor;
+                    e.target.parentNode.innerHTML = CAT_EMOJI[pro.category] || '✨';
+                  }}
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center text-4xl"
+                  style={{ backgroundColor: bgColor }}
+                >
+                  {CAT_EMOJI[pro.category] || '✨'}
+                </div>
+              )}
+            </div>
+
             <div>
-              <p className="font-body text-xs uppercase tracking-[0.3em] text-shaanti-400 mb-1">{pro.category}</p>
-              <h1 className="font-sans text-3xl font-light text-shaanti-800">{pro.name}</h1>
+              <p
+                className="font-body text-xs uppercase tracking-[0.3em] mb-1"
+                style={{ color: CAT_COLOR[pro.category] || '#A67C52' }}
+              >
+                {pro.category}
+              </p>
+              <h1 className="font-sans text-3xl md:text-4xl font-light text-shaanti-800">{pro.name}</h1>
               {pro.rating > 0 && (
-                <div className="flex items-center gap-1.5 mt-1">
-                  <Star className="w-4 h-4 fill-shaanti-400 text-shaanti-400" />
-                  <span className="font-body text-sm text-shaanti-500">{pro.rating.toFixed(1)} · {pro.review_count} avis</span>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-3.5 h-3.5 ${i < Math.round(pro.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-shaanti-200'}`}
+                    />
+                  ))}
+                  <span className="font-body text-sm text-shaanti-500 ml-1">
+                    {pro.rating.toFixed(1)} · {pro.review_count} avis
+                  </span>
                 </div>
               )}
             </div>
