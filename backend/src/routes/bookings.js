@@ -82,31 +82,32 @@ router.delete('/:id', authMiddleware, (req, res) => {
 });
 
 router.post('/:id/review', authMiddleware, (req, res) => {
-  const { rating, comment } = req.body;
-  if (!rating || rating < 1 || rating > 5) return res.status(400).json({ error: 'Note invalide (1-5)' });
-
-  const booking = db.prepare('SELECT * FROM bookings WHERE id = ? AND client_id = ? AND status = "confirmed"').get(req.params.id, req.user.id);
-  if (!booking) return res.status(404).json({ error: 'Réservation introuvable' });
-
-  const already = db.prepare('SELECT id FROM reviews WHERE booking_id = ?').get(req.params.id);
-  if (already) return res.status(409).json({ error: 'Avis déjà soumis' });
-
   try {
-    db.exec('BEGIN');
+    const { rating, comment } = req.body;
+    if (!rating || rating < 1 || rating > 5) return res.status(400).json({ error: 'Note invalide (1-5)' });
+
+    const bookingId = parseInt(req.params.id, 10);
+    const booking = db.prepare('SELECT * FROM bookings WHERE id = ? AND client_id = ?').get(bookingId, req.user.id);
+    if (!booking) return res.status(404).json({ error: 'Réservation introuvable' });
+    if (booking.status !== 'confirmed') return res.status(400).json({ error: 'Réservation non confirmée' });
+
+    const already = db.prepare('SELECT id FROM reviews WHERE booking_id = ?').get(bookingId);
+    if (already) return res.status(409).json({ error: 'Avis déjà soumis' });
+
     db.prepare('INSERT INTO reviews (client_id, professional_id, booking_id, rating, comment) VALUES (?, ?, ?, ?, ?)').run(
-      req.user.id, booking.professional_id, booking.id, rating, comment || null
+      req.user.id, booking.professional_id, bookingId, parseInt(rating, 10), comment || null
     );
+
     const avg = db.prepare('SELECT AVG(rating) as avg, COUNT(*) as cnt FROM reviews WHERE professional_id = ?').get(booking.professional_id);
     db.prepare('UPDATE professionals SET rating = ?, review_count = ? WHERE id = ?').run(
       Math.round(avg.avg * 10) / 10, avg.cnt, booking.professional_id
     );
-    db.exec('COMMIT');
-  } catch (err) {
-    db.exec('ROLLBACK');
-    return res.status(500).json({ error: 'Erreur lors de l\'envoi de l\'avis' });
-  }
 
-  res.json({ success: true });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Review error:', err);
+    res.status(500).json({ error: 'Erreur lors de l\'envoi de l\'avis' });
+  }
 });
 
 module.exports = router;

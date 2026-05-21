@@ -28,7 +28,13 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/room', roomRoutes);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', app: 'Shaanti' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', app: 'Shaanti', node: process.version }));
+
+// Gestionnaire d'erreurs global — renvoie du JSON, jamais du HTML
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(err.status || 500).json({ error: err.message || 'Erreur serveur' });
+});
 
 app.listen(PORT, () => {
   console.log(`🌿 Shaanti API démarrée sur http://localhost:${PORT}`);
